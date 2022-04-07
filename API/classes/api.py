@@ -28,8 +28,8 @@ class API:
         self.methods = dict()
         self.get_output_dir().mkdir(exist_ok=True, parents=True)
 
-    def get_name(self) -> str:
-        return self.name
+    def get_wiki_format(self) -> str:
+        raise NotImplementedError
 
     def get_filename(self) -> str:
         return f"{self.name}.csv"
@@ -72,7 +72,8 @@ class API:
                     del self.methods[match]
                 except KeyError:
                     if API.__DEBUG__:
-                        logging.error(f"No description for {match}!")
+                        logging.error(
+                            f"No description for {self.get_wiki_format()}{match}!")
 
             for key, value in self.methods.items():
                 writer.writerow([key, ""])

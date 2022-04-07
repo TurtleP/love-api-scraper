@@ -25,6 +25,9 @@ class Object(API):
         for item in api_dict["modules"]:
             self.get_methods(item["types"])
 
+    def get_wiki_format(self) -> str:
+        return f"{self.name}:"
+
     def get_output_dir(self) -> Path:
         return API.__OUTPUT_FOLDER__ / "objects"
 

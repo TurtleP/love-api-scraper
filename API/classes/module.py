@@ -14,5 +14,8 @@ class Module(API):
     def get_output_dir(self) -> Path:
         return API.__OUTPUT_FOLDER__ / "modules"
 
+    def get_wiki_format(self) -> str:
+        return f"love.{self.name}."
+
     def get_filename(self) -> str:
         return f"love.{self.name}.csv"
