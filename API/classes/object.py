@@ -7,7 +7,12 @@ from .api import API
 class Object(API):
 
     def __init__(self, api_dict: dict, supers: dict, filepath: Path):
-        super().__init__(filepath, True)
+        super().__init__(filepath)
+
+        if self.name == "gamepad":
+            self.name = "joystick"
+        elif self.name == "luathread":
+            self.name = "thread"
 
         # Super-Super Object Methods
         self.get_super_methods(api_dict["types"], supers)
@@ -19,6 +24,9 @@ class Object(API):
         # Our Methods
         for item in api_dict["modules"]:
             self.get_methods(item["types"])
+
+    def get_output_dir(self) -> Path:
+        return API.__OUTPUT_FOLDER__ / "objects"
 
     def get_super_methods(self, api_dict: dict, super_info: list):
         for root_item in api_dict:

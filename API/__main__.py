@@ -1,8 +1,8 @@
 import json
 import re
+import shutil
 from argparse import ArgumentParser
 from pathlib import Path
-from unittest import result
 
 import urllib3
 
@@ -73,8 +73,6 @@ def get_super_items(object_name: str, type_info: str) -> list:
     if type_info == "image":
         result.extend(["Texture", "Drawable"])
 
-    print(object_name, result)
-
     if type_info != "Object" and not type_info in result:
         print(f"No type info for {type_info}")
 
@@ -114,6 +112,13 @@ def gather_calls(api_data: dict, source_path: Path):
             api_item.generate()
 
 
+def cleanup():
+    stuff = ["debug", "output"]
+    for value in stuff:
+        if Path(value).is_dir():
+            shutil.rmtree(value)
+
+
 def main():
     __parser__ = ArgumentParser()
     __parser__.add_argument("path", type=Path, default=__SOURCE_PATH__)
@@ -121,6 +126,7 @@ def main():
     __parsed__ = __parser__.parse_args()
 
     if __parsed__.path:
+        cleanup()
         gather_calls(download_api(), __parsed__.path)
     else:
         print(f"Invalid path: {__parsed__.path}")

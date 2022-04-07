@@ -10,3 +10,9 @@ class Module(API):
 
         # Our Methods
         self.get_methods(api_dict["modules"])
+
+    def get_output_dir(self) -> Path:
+        return API.__OUTPUT_FOLDER__ / "modules"
+
+    def get_filename(self) -> str:
+        return f"love.{self.name}.csv"

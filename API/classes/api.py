@@ -6,34 +6,39 @@ __FUNCTION_STR_REGEX__ = re.compile(r".*\{.*\"(.*)\".*Wrap.*")
 
 import logging
 
-logging.basicConfig(filename='debug.log',
-                    encoding='utf-8', level=logging.DEBUG)
-
 
 class API:
 
-    __DEBUG_FOLDER__ = Path("debug")
     __DEBUG__ = True
 
     __OUTPUT_FOLDER__ = Path("output")
 
-    def __init__(self, filepath: Path, is_object=False):
-        self.name = filepath.stem.split("_")[1]
+    def __init__(self, filepath: Path):
+        if API.__DEBUG__:
+            logging.basicConfig(filename='debug.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s',
+                                encoding='utf-8', level=logging.DEBUG)
+
+        self.name = filepath.stem.split("_")[1].lower()
+
         if "module" in self.name:
             self.name = self.name.replace("module", "")
 
         self.filepath = filepath
 
         self.methods = dict()
-        self.is_object = is_object
+        self.get_output_dir().mkdir(exist_ok=True, parents=True)
 
-    def dump(self):
-        if not API.__DEBUG_FOLDER__.exists():
-            API.__DEBUG_FOLDER__.mkdir()
+    def get_name(self) -> str:
+        return self.name
 
-        with open(f"debug/{self.get_name()}.txt", "w") as file:
-            for key, value in self.methods.items():
-                print(f"{key}: {value}", file=file)
+    def get_filename(self) -> str:
+        return f"{self.name}.csv"
+
+    def get_output_dir(self) -> Path:
+        raise NotImplementedError
+
+    def get_output_path(self) -> Path:
+        return self.get_output_dir() / self.get_filename()
 
     def get_methods(self, api_dict: dict):
         for root_item in api_dict:
@@ -42,30 +47,15 @@ class API:
                     self.methods[method["name"]
                                  ] = method["description"].replace("\n", " ")
 
-    def get_name(self) -> str:
-        return self.name
-
     def generate(self):
-        if API.__DEBUG__:
-            self.dump()
-
-        if not API.__OUTPUT_FOLDER__.exists():
-            API.__OUTPUT_FOLDER__.mkdir()
-
         contents = self.filepath.read_text()
 
-        filename = self.name
-        if not self.is_object:
-            filename = f"love.{self.name}"
-
-        print(f"Generating file for {filename}.csv..")
+        print(f"Generating file for {self.get_filename()}..")
 
         if API.__DEBUG__:
-            logging.info(f"Generating file for {filename}.csv..")
+            logging.info(f"Generating file for {self.get_filename()}..")
 
-        save_path = API.__OUTPUT_FOLDER__ / filename
-
-        with open(f"{save_path}.csv", "w", newline='') as csvfile:
+        with open(self.get_output_path(), "w", newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=",")
             writer.writerow(["Function Name", "Description"])
 
