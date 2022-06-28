@@ -6,6 +6,16 @@ __FUNCTION_STR_REGEX__ = re.compile(r".*\{.*\"(.*)\".*Wrap.*")
 
 import logging
 
+CONSOLE_METHODS = {
+    "newBMFontRasterizer": "Creates a new Nintendo 3DS Font Rasterizer",
+    "get3D": "Gets whether 3D is enabled on the Nintendo 3DS",
+    "get3DDepth": "Gets the slider value for the 3D Depth on the Nintendo 3DS",
+    "set3D": "Sets whether Stereoscopic 3D should be enabled on the Nintendo 3DS",
+    "getWide": "Gets whether wide mode is enabled on the Nintendo 3DS",
+    "setWide": "Sets whether wide mode should be enabled on the Nintendo 3DS",
+    "setTextInput": "Displays the Software Keyboard applet for text input. Calls love.textinput on success."
+}
+
 
 class API:
 
@@ -27,12 +37,19 @@ class API:
 
         self.methods = dict()
         self.get_output_dir().mkdir(exist_ok=True, parents=True)
+        self.score = 0
+
+    def get_name(self) -> str:
+        return self.name
+
+    def __lt__(self, other):
+        return self.score < other.score
 
     def get_wiki_format(self) -> str:
         raise NotImplementedError
 
-    def get_filename(self) -> str:
-        return f"{self.name}.csv"
+    def get_filename(self, ext="csv") -> str:
+        return f"{self.name}.{ext}"
 
     def get_output_dir(self) -> Path:
         raise NotImplementedError
@@ -61,19 +78,24 @@ class API:
 
             matches = __FUNCTION_STR_REGEX__.findall(contents)
 
+            description = ""
+            match_info = ""
+
             for match in matches:
                 # Skip internal functions
                 if "_" in match:
                     continue
 
                 try:
-                    description = self.methods[match]
-                    writer.writerow([match, ""])
-                    del self.methods[match]
-                except KeyError:
-                    if API.__DEBUG__:
-                        logging.error(
-                            f"No description for {self.get_wiki_format()}{match}!")
+                    if not match in CONSOLE_METHODS:
+                        description = re.sub("\s\s+", " ", self.methods[match])
+                        match_info = f"[{match}](https://love2d.org/wiki/love.{self.name}.{match})"
+                    else:
+                        description = CONSOLE_METHODS[match]
+                        match_info = match
 
-            for key, value in self.methods.items():
-                writer.writerow([key, ""])
+                    writer.writerow([match_info, description])
+
+                    del self.methods[match]
+                except KeyError:  # found a console-specific thing
+                    pass

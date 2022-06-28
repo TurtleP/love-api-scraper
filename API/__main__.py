@@ -8,6 +8,7 @@ import urllib3
 
 from .classes.module import Module
 from .classes.object import Object
+from .classes.page import Page
 
 __TYPE_VALUE_REGEX__ = re.compile(r".*::type\(\"(.*)\", &(.*).*\)")
 
@@ -81,6 +82,7 @@ def get_super_items(object_name: str, type_info: str) -> list:
 
 def gather_calls(api_data: dict, source_path: Path):
     api_supers = dict()
+    api_items = list()
 
     for item in source_path.rglob("*.cpp"):
         api_item = None
@@ -111,6 +113,10 @@ def gather_calls(api_data: dict, source_path: Path):
         if api_item:
             api_item.generate()
 
+            api_items.append(api_item)
+
+    Page(sorted(api_items))
+
 
 def cleanup():
     stuff = ["debug", "output"]
@@ -127,6 +133,7 @@ def main():
 
     if __parsed__.path:
         cleanup()
+
         gather_calls(download_api(), __parsed__.path)
     else:
         print(f"Invalid path: {__parsed__.path}")

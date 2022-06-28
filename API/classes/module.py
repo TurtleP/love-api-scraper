@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from .api import API
@@ -10,6 +11,14 @@ class Module(API):
 
         # Our Methods
         self.get_methods(api_dict["modules"])
+
+        for root_item in api_dict["modules"]:
+            if root_item["name"].lower() == self.name.lower():
+                self.description = re.sub(
+                    "\s\s+", " ", root_item["description"]).replace("\n", "")
+
+    def get_description(self) -> str:
+        return self.description
 
     def get_output_dir(self) -> Path:
         return API.__OUTPUT_FOLDER__ / "modules"
